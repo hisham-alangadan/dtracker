@@ -1,5 +1,8 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { View, Text, Switch, Platform } from "react-native"
+import * as Location from "expo-location";
+import dgram from "react-native-udp";
+import * as Network from "expo-network";
 
 export default function Client() {
 
@@ -9,20 +12,35 @@ export default function Client() {
     const [longitude, setLongitude] = useState('');
     const [switchEnabled, setSwitchEnabled] = useState(true);
 
-    // intervalID = null;
+    const socket = dgram.createSocket('udp4');
+
+    socket.bind(12345)
+
+    socket.once('listening', function () {
+        socket.send("Hello", undefined, "Hello".length, 12345, "127.0.0.1");
+    })
+
+    // var intervalID;
+
+    async function getIPAddress() {
+        ipaddr = await Network.getIpAddressAsync();
+    }
 
     function handleSwitchValueChange() {
         if (switchEnabled === true) {
-            intervalID ? clearInterval(intervalID) : null;
+            console.log("interval cleared b4 " + intervalID)
+            clearInterval(intervalID);
+            console.log("interval cleared af " + intervalID)
+            setErrorMsg("Location tracking off")
         }
         else {
             intervalID = setInterval(getCurrentLocation, 500);
+            console.log("interval set " + intervalID)
+            setErrorMsg("Location tracking on");
         }
 
         setSwitchEnabled(!switchEnabled);
     }
-
-    let i = 0;
 
     async function getCurrentLocation() {
         if (Platform.OS !== 'android') {
@@ -30,15 +48,26 @@ export default function Client() {
             return;
         }
 
-        let { status } = await Location.requestForegroundPermissionAsync();
+        let { status } = await Location.getForegroundPermissionsAsync();
         if (status !== 'granted') {
             setErrorMsg("Permission to access location was denied.");
             return;
         }
 
-        setErrorMsg(i);
-        i++;
+        let location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.BestForNavigation });
+        setLocation(location)
+
+        setLatitude(location.coords.latitude)
+        setLongitude(location.coords.longitude)
+
     }
+
+    useEffect(() => {
+        getIPAddress()
+        intervalID = setInterval(getCurrentLocation, 500);
+        console.log("interval set " + intervalID)
+        setErrorMsg("Location tracking on");
+    }, [])
 
 
     return (
@@ -46,6 +75,8 @@ export default function Client() {
             <Text className="text-red-700 text-xl">{errorMsg}</Text>
             <Text>Hi</Text>
             <Switch value={switchEnabled} onValueChange={handleSwitchValueChange} />
+            <Text>Latitude: {latitude === '' ? "waiting for signal" : latitude}</Text>
+            <Text>Longitude: {longitude === '' ? "waiting for signal" : longitude}</Text>
         </View>
     )
 }

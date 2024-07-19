@@ -12,30 +12,31 @@ export default function Client() {
     const [longitude, setLongitude] = useState('');
     const [switchEnabled, setSwitchEnabled] = useState(true);
 
-    const socket = dgram.createSocket('udp4');
+    function newSocket() {
+        const socket = dgram.createSocket('udp4');
 
-    socket.bind(12345)
+        socket.bind(12345)
 
-    socket.once('listening', function () {
-        socket.send("Hello", undefined, "Hello".length, 12345, "127.0.0.1");
-    })
-
-    // var intervalID;
+        socket.once('listening', function () {
+            socket.send("Hello", undefined, "Hello".length, 12345, "127.0.0.1");
+        })
+    }
 
     async function getIPAddress() {
         ipaddr = await Network.getIpAddressAsync();
+        console.log(ipaddr)
     }
 
     function handleSwitchValueChange() {
         if (switchEnabled === true) {
-            console.log("interval cleared b4 " + intervalID)
+            // console.log("interval cleared b4 " + intervalID)
             clearInterval(intervalID);
-            console.log("interval cleared af " + intervalID)
+            // console.log("interval cleared af " + intervalID)
             setErrorMsg("Location tracking off")
         }
         else {
             intervalID = setInterval(getCurrentLocation, 500);
-            console.log("interval set " + intervalID)
+            // console.log("interval set " + intervalID)
             setErrorMsg("Location tracking on");
         }
 
@@ -64,8 +65,9 @@ export default function Client() {
 
     useEffect(() => {
         getIPAddress()
+        newSocket()
         intervalID = setInterval(getCurrentLocation, 500);
-        console.log("interval set " + intervalID)
+        // console.log("interval set " + intervalID)
         setErrorMsg("Location tracking on");
     }, [])
 

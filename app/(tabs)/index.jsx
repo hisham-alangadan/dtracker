@@ -5,7 +5,7 @@ export default function Index() {
     return (
         <View className="flex-1 items-center justify-center">
             <Text className="text-3xl">Hello there</Text>
-            <Link href="\client">Client</Link>
+            <Link href="\getip">Client</Link>
         </View>
     )
 }

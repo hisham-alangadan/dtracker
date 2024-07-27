@@ -1,29 +1,40 @@
 import { useEffect, useState } from "react"
 import { View, Text, Switch, Platform } from "react-native"
+import { useLocalSearchParams } from "expo-router";
 import * as Location from "expo-location";
 import dgram from "react-native-udp";
 import * as Network from "expo-network";
 
 export default function Client() {
 
+    const { ip } = useLocalSearchParams();
+    // console.log(ip)
+
     const [location, setLocation] = useState('');
     const [errorMsg, setErrorMsg] = useState('');
     const [latitude, setLatitude] = useState('');
     const [longitude, setLongitude] = useState('');
     const [switchEnabled, setSwitchEnabled] = useState(true);
+    const [localip, setLocalip] = useState('');
 
     function newSocket() {
         const socket = dgram.createSocket('udp4');
 
+        console.log("sending to " + ip)
+
         socket.bind(12345)
 
         socket.once('listening', function () {
-            socket.send("Hello", undefined, "Hello".length, 12345, "127.0.0.1");
+            socket.send('Hello World!', undefined, undefined, 12345, ip, function (err) {
+                if (err) throw err
+            })
+            console.log("sent to " + ip)
         })
     }
 
     async function getIPAddress() {
-        ipaddr = await Network.getIpAddressAsync();
+        let ipaddr = await Network.getIpAddressAsync();
+        setLocalip(ipaddr)
         console.log(ipaddr)
     }
 
@@ -35,7 +46,7 @@ export default function Client() {
             setErrorMsg("Location tracking off")
         }
         else {
-            intervalID = setInterval(getCurrentLocation, 500);
+            intervalID = setInterval(getCurrentLocation, 1000);
             // console.log("interval set " + intervalID)
             setErrorMsg("Location tracking on");
         }
@@ -75,6 +86,8 @@ export default function Client() {
     return (
         <View className="flex-1 items-center justify-center">
             <Text className="text-red-700 text-xl">{errorMsg}</Text>
+            <Text className="text-red-700 text-xl">sent ip: {ip === '' ? "Did not recieve" : ip}</Text>
+            <Text className="text-red-700 text-xl">ip: {localip === '' ? "loading..." : localip}</Text>
             <Text>Hi</Text>
             <Switch value={switchEnabled} onValueChange={handleSwitchValueChange} />
             <Text>Latitude: {latitude === '' ? "waiting for signal" : latitude}</Text>

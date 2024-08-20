@@ -1,1 +1,10 @@
 - ~~start client page with location tracking on~~ 
+- Reset button whereever requied
+- Make the app into a <Stack> architecture
+- Beautify the whole thing
+- Settings page:
+    - Dark mode
+    - Distance formula selection
+    - sampling time selection
+    - tooltips
+- solve all possible unhandled rejections

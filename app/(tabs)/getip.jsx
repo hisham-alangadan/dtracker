@@ -25,6 +25,7 @@ export default function GetIP() {
                 <Text>heh</Text>
                 <Text>{ip}</Text>
             </Link>
+            <Link href="\index">Go Back</Link>
         </View>
     )
 }
